@@ -1,0 +1,67 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  SWIFT_VERSION: 6.3.3
+
+jobs:
+  test:
+    name: Linux tests (${{ matrix.name }})
+    runs-on: ubuntu-latest
+    container: swift:6.3.3-noble
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Apple Observation
+            traits: ""
+          - name: Embedded implementation
+            traits: "--traits EmbeddedObservation"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build
+        run: swift build --build-tests ${{ matrix.traits }}
+      - name: Test
+        run: swift test --skip-build ${{ matrix.traits }}
+
+  macos:
+    name: macOS tests
+    runs-on: macos-26
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build
+        run: swift build --build-tests
+      - name: Test
+        run: swift test --skip-build
+
+  embedded:
+    name: Embedded Wasm build
+    runs-on: ubuntu-latest
+    container: swift:6.3.3-noble
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Swift SDK for WebAssembly
+        run: |
+          apt-get update -qq && apt-get install -y -qq curl >/dev/null
+          bundle="swift-${SWIFT_VERSION}-RELEASE_wasm.artifactbundle.tar.gz"
+          curl -fsSL -o "/tmp/${bundle}" \
+            "https://download.swift.org/swift-${SWIFT_VERSION}-release/wasm-sdk/swift-${SWIFT_VERSION}-RELEASE/${bundle}"
+          swift sdk install "/tmp/${bundle}"
+          swift sdk list
+      - name: Build
+        run: swift build --target SwiftObservation --swift-sdk "swift-${SWIFT_VERSION}-RELEASE_wasm-embedded"
