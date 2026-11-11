@@ -1,5 +1,10 @@
 # swift-observation
 
+[![CI](https://github.com/NVMNovem/swift-observation/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/NVMNovem/swift-observation/actions/workflows/ci.yml)
+[![Swift 6.2+](https://img.shields.io/badge/Swift-6.2%2B-F05138?logo=swift&logoColor=white)](https://swift.org)
+[![Platforms](https://img.shields.io/badge/platforms-Apple%20%7C%20Linux%20%7C%20WebAssembly-blue)](#)
+[![Embedded Swift](https://img.shields.io/badge/Embedded%20Swift-compatible-8A2BE2)](https://www.swift.org/documentation/embedded/)
+
 `@Observable` and `withObservationTracking` that also build in **Embedded Swift**.
 
 Everywhere Apple's `Observation` module exists, this package simply re-exports it.
